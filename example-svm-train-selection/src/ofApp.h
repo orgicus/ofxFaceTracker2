@@ -1,0 +1,72 @@
+#pragma once
+
+#include "ofMain.h"
+#include "ofxFaceTracker2.h"
+#include "ofxBiquadFilter.h"
+#include "dlib/svm.h"
+
+typedef dlib::matrix<double,40,1> sample_type;
+typedef dlib::radial_basis_kernel<sample_type> kernel_type;
+
+typedef dlib::decision_function<kernel_type> dec_funct_type;
+typedef dlib::normalized_function<dec_funct_type> funct_type;
+
+typedef dlib::probabilistic_decision_function<kernel_type> probabilistic_funct_type;
+typedef dlib::normalized_function<probabilistic_funct_type> pfunct_type;
+
+struct cross_validation_result{
+    dlib::matrix<double> result;
+    double nu;
+    double gamma;
+};
+//compare gamma and nu values for sorting
+struct compare_result
+{
+    bool operator()(const cross_validation_result& a, const cross_validation_result& b) const
+    {
+        return (a.result(0) > b.result(0) && a.result(1) > b.result(1));
+    }
+};
+
+#define TOP_SIZE 10
+
+class ofApp : public ofBaseApp {
+public:
+    void setup();
+    void update();
+    void draw();
+    
+    void keyPressed(int key);
+    
+    sample_type makeSample();
+    
+    ofxFaceTracker2 tracker;
+    ofVideoGrabber grabber;
+    
+    ofxBiquadFilter1f predictionEaseFilter;
+    
+    funct_type learned_function;
+    
+    //training
+    std::vector<sample_type> samples;
+    std::vector<double> labels;
+    dlib::svm_nu_trainer<kernel_type> trainer;
+    dlib::vector_normalizer<sample_type> normalizer;
+    pfunct_type learned_pfunct;
+    
+    vector<cross_validation_result> topCrossValidationResults;
+    
+    int  selectedValidationResult;
+    
+    int  numPositive;
+    int  numNegative;
+    
+    void addPositiveSample();
+    void addNegativeSample();
+    void clearSamples();
+    void crossValidate();
+    void drawCrossValidationResults();
+    void train();
+    void save();
+
+};

@@ -98,15 +98,18 @@ sample_type ofApp::makeSample(){
 }
 
 void ofApp::addPositiveSample(){
-    sample_type samp = makeSample();
-    samples.push_back(samp);
-    labels.push_back(+1);
+    if(tracker.size() > 0){
+        sample_type samp = makeSample();
+        samples.push_back(samp);
+        labels.push_back(+1);
+    }
 }
 void ofApp::addNegativeSample(){
-    sample_type samp = makeSample();
-    samples.push_back(samp);
-    labels.push_back(-1);
-
+    if(tracker.size() > 0){
+        sample_type samp = makeSample();
+        samples.push_back(samp);
+        labels.push_back(-1);
+    }
 }
 //most of the code is "kindly borrowed" directly from dlib's svm_ex.cpp example
 void ofApp::train(){
@@ -147,6 +150,14 @@ void ofApp::train(){
     }
     //        gamma: 0.03125    nu: 0.00025     cross validation accuracy: 1 1
     //        gamma: 0.00625    nu: 0.00125     cross validation accuracy: 1 1
+    
+    // From looking at the output of the above loop it turns out that a good value for nu
+    // and gamma for this problem is 0.15625 for both.  So that is what we will use.
+    
+    // Now we train on the full set of data and obtain the resulting decision function.  We
+    // use the value of 0.15625 for nu and gamma.  The decision function will return values
+    // >= 0 for samples it predicts are in the +1 class and numbers < 0 for samples it
+    // predicts to be in the -1 class.
     trainer.set_kernel(kernel_type(0.00625));
     trainer.set_nu(0.00125);
     
@@ -160,9 +171,6 @@ void ofApp::train(){
     learned_pfunct.normalizer = normalizer;
     learned_pfunct.function = train_probabilistic_decision_function(trainer, samples, labels, 3);
     
-    //learned_function.function = reduced2(trainer,10).train(samples, labels);
-    
-    //        dlib::serialize(ofToDataPath("data_frown.func")) << learned_function;
     dlib::serialize(ofToDataPath("data_your_expression.func")) << learned_pfunct;
     
     cout << "saved " << ofToDataPath("data_your_expression.func") << endl;

@@ -49,9 +49,9 @@ void ofApp::draw(){
     tracker.drawDebug();
     
 #ifndef __OPTIMIZE__
-    ofSetColor(ofColor::Red);
+//    ofSetColor(ofColor::Red);
     ofDrawBitmapString("Warning! Run this app in release mode to get proper performance!",10,60);
-    ofSetColor(ofColor::White);
+//    ofSetColor(ofColor::White);
 #endif
     
     
